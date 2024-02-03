@@ -163,9 +163,7 @@ int main(int argc, char *argv[])
     startGetPoin(&plant);
     int delI = 0;
     for (int c=0; c<100000; c++){
-        for(int i=plant.box.size()-1; i>=0; i--){
-            if(i==0){
-                for(auto a=plant.box.begin(); a!=plant.box.end(); a++){
+        for(auto a=plant.box.begin(); a!=plant.box.end(); a++){
                     a->old++;
                 };
                 for (auto it = plant.box.begin(); it != plant.box.end(); ) {
@@ -184,7 +182,7 @@ int main(int argc, char *argv[])
         ++it; // Переходим к следующему элементу в векторе
     }
 };
-            };
+        for(int i=plant.box.size()-1; i>=0; i--){
             runBrain(&plant, &plant.box[i], &i);
             if(i%1==0){
                 cout<<"\n";
