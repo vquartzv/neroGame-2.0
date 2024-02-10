@@ -9,7 +9,7 @@
 #include <SFML/Graphics.hpp>
 
 using std::cout;
-const int startPoin = 600; 
+const int startPoin = 500; 
 const int sizeX = 50;
 const int sizeY = 50;
 const int genSize = 8;
@@ -88,10 +88,10 @@ void killPoint(map* plant, poin* point, int* dell){
                 if(logs){
                     cout<<"kill "<<move.first<<":"<<move.second<<"\n";
                     cout<<"kill "<<posSet.first<<":"<<posSet.second<<"\n";
+                    plant->printPlant();
                 };
                 a = plant->box.erase(a);
                 plant->update();
-                plant->printPlant();
                 return;
             }else{a++;};
         };
@@ -214,7 +214,7 @@ void createWin(sf::VertexArray* boxdraw){
     	window.clear(sf::Color::Blue);
     	window.draw(rectangle);
     	window.draw(grid);
-    	//window.draw(*boxdraw);
+    	window.draw(*boxdraw);
     	window.display();
     };
 };
@@ -243,8 +243,8 @@ sf::VertexArray updateMap(map* plant){
 int main(int argc, char *argv[])
 {
     map plant = map(sizeX, sizeY);
-    sf::VertexArray boxdraw = updateMap(&plant);
-    std::thread thre(createWin, &boxdraw);
+    sf::VertexArray boxDraw = updateMap(&plant);
+    std::thread thre(createWin, &boxDraw);
     thre.detach();
     startGetPoin(&plant);
     int delI = 0;
@@ -272,11 +272,8 @@ int main(int argc, char *argv[])
             runBrain(&plant, &plant.box[i], &i);
         };
         if(c%1==0){
-                cout<<"\n";
-            cout<<"\n";
-            cout<<"\n";
-                plant.printPlant();
-                sf::VertexArray boxdraw = updateMap(&plant);
+            boxDraw = updateMap(&plant);
+                //plant.printPlant();
                 //std::this_thread::sleep_for(std::chrono::milliseconds(20));
             };
         if(plant.box.size()==0){
