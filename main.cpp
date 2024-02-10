@@ -26,6 +26,8 @@ const bool logs = false;
 
 bool gameRun = true;
 int max_lineage=0;
+int mapSee=0;
+int sizePoin=10;
 
 void startGetPoin(map* pl){
     for(int i=0; i<startPoin; i++){
@@ -174,10 +176,76 @@ void runBrain(map* plant, poin* point, int* del){
     };
 };
 
+void createWin(sf::VertexArray* boxdraw){
+	sf::RectangleShape rectangle;
+    sf::VertexArray grid;
+    sf::VideoMode mode = sf::VideoMode::getDesktopMode();
+    sf::RenderWindow window(mode, "My window", sf::Style::Fullscreen);
+    window.setFramerateLimit(60);
+
+	int sizeBoxX=sizeX;
+	sizePoin=(window.getSize().x-40)/sizeBoxX;
+	int sizeX=window.getSize().x-40;
+    
+    rectangle.setSize(sf::Vector2f(sizeX, sizeX));
+	rectangle.setPosition(20, 20);
+	grid.setPrimitiveType(sf::Lines);
+	sf::Color gridColor = sf::Color::Black;
+	for (int y = 20; y <= sizeX; y += sizePoin)
+    {
+        // добавляем две вершины для каждой линии
+        grid.append(sf::Vertex(sf::Vector2f(20, y), gridColor)); // левый конец линии
+        grid.append(sf::Vertex(sf::Vector2f(window.getSize().x-20, y), gridColor)); // правый конец линии
+    }
+    for (int x = 20; x <= sizeX; x += sizePoin)
+    {
+        // добавляем две вершины для каждой линии
+        grid.append(sf::Vertex(sf::Vector2f(x, 20), gridColor)); // верхний конец линии
+        grid.append(sf::Vertex(sf::Vector2f(x, sizeX+20), gridColor)); // нижний конец линии
+    }
+    
+    while(window.isOpen()){
+    	sf::Event event;
+    	while (window.pollEvent(event)){
+	               if (event.type == sf::Event::Closed){
+	               	window.close();
+	               	};
+	               };
+    	window.clear(sf::Color::Blue);
+    	window.draw(rectangle);
+    	window.draw(grid);
+    	//window.draw(*boxdraw);
+    	window.display();
+    };
+};
+
+sf::VertexArray updateMap(map* plant){
+	sf::VertexArray squares(sf::Quads, plant->box.size() * 4);
+    sf::Color squareColor = sf::Color::Green;
+    for(int i = 0; i<plant->box.size(); i++){
+        	int x=plant->box[i].getPos().first*sizePoin+20;
+        	int y=plant->box[i].getPos().second*sizePoin+20;
+        	squares[i * 4].position = sf::Vector2f(x, y); // левый верхний угол
+        	squares[i * 4 + 1].position = sf::Vector2f(x + sizePoin, y); // правый верхний угол
+        	squares[i * 4 + 2].position = sf::Vector2f(x + sizePoin, y + sizePoin); // правый нижний угол
+        	squares[i * 4 + 3].position = sf::Vector2f(x, y + sizePoin); // левый нижний угол
+        	if(mapSee==0){
+        		squareColor = sf::Color::Green;
+        	};
+        	squares[i * 4].color = squareColor;
+        	squares[i * 4 + 1].color = squareColor;
+        	squares[i * 4 + 2].color = squareColor;
+        	squares[i * 4 + 3].color = squareColor;
+        };
+    return squares;
+};
+
 int main(int argc, char *argv[])
 {
     map plant = map(sizeX, sizeY);
-    plant.getWin(sizeX);
+    sf::VertexArray boxdraw = updateMap(&plant);
+    std::thread thre(createWin, &boxdraw);
+    thre.detach();
     startGetPoin(&plant);
     int delI = 0;
     for (int c=0; c<100000; c++){
@@ -208,7 +276,7 @@ int main(int argc, char *argv[])
             cout<<"\n";
             cout<<"\n";
                 plant.printPlant();
-                plant.drawWin();
+                sf::VertexArray boxdraw = updateMap(&plant);
                 //std::this_thread::sleep_for(std::chrono::milliseconds(20));
             };
         if(plant.box.size()==0){
