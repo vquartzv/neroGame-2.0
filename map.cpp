@@ -3,6 +3,7 @@
 #include "bakteria.h"
 #include <vector>
 #include <string>
+#include <SFML/Graphics.hpp>
 
 
 map::map(int maxX, int maxY):maxX(maxX), maxY(maxY), mapSee(0){
@@ -109,7 +110,7 @@ void map::drawWin(){
         window.draw(grid);
         sf::VertexArray squares(sf::Quads, box.size() * 4);
         sf::Color squareColor = sf::Color::Green;
-        for(int i = 0; i<=box.size(); i++){
+        for(int i = 0; i<box.size(); i++){
         	int x=box[i].getPos().first*sizePoin+20;
         	int y=box[i].getPos().second*sizePoin+20;
         	squares[i * 4].position = sf::Vector2f(x, y); // левый верхний угол
