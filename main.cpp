@@ -6,31 +6,34 @@
 #include <string>
 #include <cstdlib>
 #include <thread>
+#include <SFML/Graphics.hpp>
 
 using std::cout;
-const int startPoin = 16; 
-const int sizeX = 4;
-const int sizeY = 4;
+const int startPoin = 600; 
+const int sizeX = 50;
+const int sizeY = 50;
 const int genSize = 8;
-const int genomSize=20;
+const int genomSize=30;
 const int enerjiStart=20;
 const int z = 4;
 const int maxOld = 100;
-const int fotosUp = 10;
-const int maxEnerji = 100;
+const int fotosUp = 5;
+const int maxEnerji = 50;
 const int enerjiSpawn = 20;
 const int iterBrain = 5;
 const int runEnergiDel = 2;
-const bool logs = true;
+const bool logs = false;
 
 bool gameRun = true;
+int max_lineage=0;
 
 void startGetPoin(map* pl){
     for(int i=0; i<startPoin; i++){
         while(true){
             std::pair<int, int> pos = {std::rand()%(sizeX+1), std::rand()%(sizeY+1)};
             if(pl->getObj(pos)==nullptr){
-                pl->setObj(pos, poin(pos, genSize, genomSize, enerjiStart));
+                pl->setObj(pos, poin(max_lineage, pos, genSize, genomSize, enerjiStart));
+                max_lineage++;
                 break;
             }
         }
@@ -84,7 +87,7 @@ void killPoint(map* plant, poin* point, int* dell){
                     cout<<"kill "<<move.first<<":"<<move.second<<"\n";
                     cout<<"kill "<<posSet.first<<":"<<posSet.second<<"\n";
                 };
-                a = plant->box.erase((a));
+                a = plant->box.erase(a);
                 plant->update();
                 plant->printPlant();
                 return;
@@ -97,7 +100,7 @@ void spawnPoint(map* plant, poin* point){
     std::pair<int, int> posSet = point->getPos();
     std::pair<int, int> move = point->move();
     if(plant->getObj(move)==nullptr&&point->energi>enerjiSpawn+10&&move.first>=0&&move.first<=sizeX && move.second>=0 && move.second<=sizeY){
-        plant->setObj(move, poin(move, genSize, genomSize, enerjiSpawn, brain(genSize, genomSize, point->Brain.dell(z))));
+        plant->setObj(move, poin(point->lineage, move, genSize, genomSize, enerjiSpawn, brain(genSize, genomSize, point->Brain.dell(z))));
         plant->update();
         point->energi-=enerjiSpawn;
         if(logs){cout<<"spawn "<<posSet.first<<":"<<posSet.second<<"\n";};
@@ -151,6 +154,20 @@ void runBrain(map* plant, poin* point, int* del){
             };
             break;
             
+            case 8:
+            if(plant->getObj(move)!=nullptr){
+                for(auto a = plant->box.begin(); a!=plant->box.end(); a++){
+                    if(a->getPos()==move){
+                        if(a->lineage==point->lineage){
+                            point->Brain.moveGenSet(1);
+                        }
+                        else{
+                            point->Brain.moveGenSet(2);
+                        };
+                    };
+                };
+            };
+            
             default:
             return;
         };
@@ -160,36 +177,40 @@ void runBrain(map* plant, poin* point, int* del){
 int main(int argc, char *argv[])
 {
     map plant = map(sizeX, sizeY);
+    plant.getWin(sizeX);
     startGetPoin(&plant);
     int delI = 0;
     for (int c=0; c<100000; c++){
         for(auto a=plant.box.begin(); a!=plant.box.end(); a++){
-                    a->old++;
-                };
-                for (auto it = plant.box.begin(); it != plant.box.end(); ) {
-    if (it->old > maxOld) {
-        if (logs) {
-            std::pair<int, int> posSet = it->getPos();
-            std::pair<int, int> move = it->move();
-            cout << "end old_max: " << ": " << posSet.first << " " << posSet.second << " " << it->old << "\n";
-        }
-        it = plant.box.erase(it); // Возвращаем итератор на следующий элемент после удаления
-        plant.update();
-        if (logs) {
-            plant.printPlant();
-        }
-    } else {
-        ++it; // Переходим к следующему элементу в векторе
-    }
-};
+            a->old++;
+        };
+        for (auto it = plant.box.begin(); it != plant.box.end(); ) {
+            if (it->old > maxOld || it->energi<0) {
+                if (logs) {
+                    std::pair<int, int> posSet = it->getPos();
+                    std::pair<int, int> move = it->move();
+                    cout << "end old_max: " << ": " << posSet.first << " " << posSet.second << " " << it->old << "\n";
+                }
+                it = plant.box.erase(it); // Возвращаем итератор на следующий элемент после удаления
+                plant.update();
+                if (logs) {
+                    plant.printPlant();
+                }
+            } else {
+                ++it; // Переходим к следующему элементу в векторе
+            }
+        };
         for(int i=plant.box.size()-1; i>=0; i--){
             runBrain(&plant, &plant.box[i], &i);
-            if(i%1==0){
-                cout<<"\n";
-                plant.printPlant();
-                std::this_thread::sleep_for(std::chrono::milliseconds(20));
-            };
         };
+        if(c%1==0){
+                cout<<"\n";
+            cout<<"\n";
+            cout<<"\n";
+                plant.printPlant();
+                plant.drawWin();
+                //std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            };
         if(plant.box.size()==0){
             startGetPoin(&plant);
             char g;
