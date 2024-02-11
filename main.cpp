@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <thread>
 #include <SFML/Graphics.hpp>
+#include <SFML/Graphics/VertexBuffer.hpp>
 
 using std::cout;
 const int startPoin = 500; 
@@ -26,8 +27,9 @@ const bool logs = false;
 
 bool gameRun = true;
 int max_lineage=0;
-int mapSee=0;
+int mapSee=1;
 int sizePoin=10;
+map plant = map(sizeX, sizeY);
 
 void startGetPoin(map* pl){
     for(int i=0; i<startPoin; i++){
@@ -176,7 +178,7 @@ void runBrain(map* plant, poin* point, int* del){
     };
 };
 
-void createWin(sf::VertexArray* boxdraw){
+void createWin(){
 	sf::RectangleShape rectangle;
     sf::VertexArray grid;
     sf::VideoMode mode = sf::VideoMode::getDesktopMode();
@@ -204,47 +206,39 @@ void createWin(sf::VertexArray* boxdraw){
         grid.append(sf::Vertex(sf::Vector2f(x, sizeX+20), gridColor)); // нижний конец линии
     }
     
+    sf::RectangleShape box;
+    box.setSize(sf::Vector2f(sizePoin, sizePoin));
+
     while(window.isOpen()){
     	sf::Event event;
     	while (window.pollEvent(event)){
-	               if (event.type == sf::Event::Closed){
-	               	window.close();
-	               	};
-	               };
-    	window.clear(sf::Color::Blue);
-    	window.draw(rectangle);
+    		switch (event.type)
+    		{
+    		      case sf::Event::Closed:
+    		      window.close();
+    		      break;
+    }
+}
+	    window.clear(sf::Color::Blue);
+	    window.draw(rectangle);
     	window.draw(grid);
-    	window.draw(*boxdraw);
+    	for(auto a = plant.box.begin(); a!=plant.box.end(); a++){
+    			box.setPosition(a->getPos().first*sizePoin+20, a->getPos().second*sizePoin+20);
+	    		if (mapSee==0){
+	    			box.setFillColor(sf::Color::Green);
+	    		} else if (mapSee==1){
+	    			box.setFillColor(sf::Color(a->killGet(), 200-a->killGet(), 0, 255));
+	    		};
+	    		window.draw(box);
+	    };
+	    	
     	window.display();
     };
 };
 
-sf::VertexArray updateMap(map* plant){
-	sf::VertexArray squares(sf::Quads, plant->box.size() * 4);
-    sf::Color squareColor = sf::Color::Green;
-    for(int i = 0; i<plant->box.size(); i++){
-        	int x=plant->box[i].getPos().first*sizePoin+20;
-        	int y=plant->box[i].getPos().second*sizePoin+20;
-        	squares[i * 4].position = sf::Vector2f(x, y); // левый верхний угол
-        	squares[i * 4 + 1].position = sf::Vector2f(x + sizePoin, y); // правый верхний угол
-        	squares[i * 4 + 2].position = sf::Vector2f(x + sizePoin, y + sizePoin); // правый нижний угол
-        	squares[i * 4 + 3].position = sf::Vector2f(x, y + sizePoin); // левый нижний угол
-        	if(mapSee==0){
-        		squareColor = sf::Color::Green;
-        	};
-        	squares[i * 4].color = squareColor;
-        	squares[i * 4 + 1].color = squareColor;
-        	squares[i * 4 + 2].color = squareColor;
-        	squares[i * 4 + 3].color = squareColor;
-        };
-    return squares;
-};
-
 int main(int argc, char *argv[])
 {
-    map plant = map(sizeX, sizeY);
-    sf::VertexArray boxDraw = updateMap(&plant);
-    std::thread thre(createWin, &boxDraw);
+    std::thread thre(createWin);
     thre.detach();
     startGetPoin(&plant);
     int delI = 0;
@@ -272,7 +266,6 @@ int main(int argc, char *argv[])
             runBrain(&plant, &plant.box[i], &i);
         };
         if(c%1==0){
-            boxDraw = updateMap(&plant);
                 //plant.printPlant();
                 //std::this_thread::sleep_for(std::chrono::milliseconds(20));
             };

@@ -7,7 +7,7 @@
 class poin{
     
     private:
-    int kill=5;
+    int kill=0;
     std::pair<int, int> pos;
     int oritation;
     int sizGen, sizGenom;

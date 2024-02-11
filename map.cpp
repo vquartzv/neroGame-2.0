@@ -7,7 +7,7 @@
 #include <SFML/Graphics.hpp>
 
 
-map::map(int maxX, int maxY):maxX(maxX), maxY(maxY), mapSee(0){
+map::map(int maxX, int maxY):maxX(maxX), maxY(maxY){
 	
 }
 

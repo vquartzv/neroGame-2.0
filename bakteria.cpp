@@ -46,13 +46,13 @@ void poin::setPos(std::pair<int, int> Pos){
 
 void poin::killUp(){
     if(kill>1){
-        kill--;
+        kill-=5;
     };
 }
 
 void poin::killDown(){
-    if(kill<9){
-        kill++;
+    if(kill<200){
+        kill+=5;
     };
 }
 
